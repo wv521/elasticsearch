@@ -35,3 +35,50 @@ PhraseQuery          短语搜索
 SpanQuery             跨段搜索
 
 Lucene图形化工具Luke：https://github.com/DmitryKey/luke
+
+
+Node
+  =====>UnCompiledNode
+    =====>Builder<T> owner
+	=====>int numArcs
+	=====>Arc<T>[] arcs
+	  =====>int label
+	  =====>Node target
+	  =====>boolean isFinal
+	  =====>T output
+	  =====>T nextFinalOutput
+  =====>CompiledNode
+
+
+
+output:
+      是某个输入的附加值（payload）.比如输入值为mop 100(权重/分值) 即output为：100。 output值为赋值给关键字的第一个词，如果为0不用存储
+
+lable:
+      即我们的输入值中字符对应的ASCII值。如mop中m的ASCII值为109即lable为109
+
+flag:
+          key           value               description
+	BIT_FINAL_ARC        1    arc对应的label是某个term的最后一个字符
+	BIT_LAST_ARC         2	  arc是Node节点中的最后一个Arc，上文中我们说到一个UnCompiledNode状态的Node可以包含多个arc
+    BIT_TARGET_NEXT	     4	  上一个由状态UnCompiledNode转为CompiledNode状态的Node是当前arc的target节点, 它实际是用来描述当前的arc中的label不是输入值的最后一个字符，例如"mop"中，“m”、"o"就不是输入值mop的最后一个字符
+    BIT_STOP_NODE	     8	  arc的target是一个终止节点，例如描述"p"的arc，它的target就是一个终止节点（终止节点的概念上文中已介绍）
+    BIT_ARC_HAS_OUTPUT	 16	  arc有output值(output不为0)，例如描述"m"的arc就具有output值，而描述"o"、"p"的arc就没有output值
+
+
+FST写入顺序：节点间按照从后往前，节点内的arc按照写入到该节点的顺序从前往后
+
+
+lastFrozenNode：
+			  节点写入到byte[]数组中最后站位的下标
+
+Finite StateTransducers 简称 FST，中文名：有穷状态转换器
+FST分析参考地址：https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0220/35.html
+
+
+其他Field类型
+SortedDocValuesField	      存储为文本内容的DocValue字段。StoredDocValuesField适合索引字段值为文本并且需要按值进行排序的字段
+SortedSetDocValuesField	      存储多域值的DocValues字段。StoredSetDocValuesField适合索引字段值为文本并且需要按值进行分组、聚合等排序的字段
+NumericDocValuesField	      存储单个数值型的DocValues字段，主要包括int，long，float，double
+SortedNumericDocValuesField	  存储数值型有序数组列表的DocValues字段
+StoredField	StoredField       适合索引只需要保存字段值而不进行其他操作的字段

@@ -43,13 +43,11 @@ public class ElasticsearchUtil {
         File file = new File("G:elasticsearch/lucene/data");
         // 指定索引文件在硬盘中的位置
         Directory directory = FSDirectory.open(Paths.get("G:/elasticsearch/lucene/index"));
-        // 创建索引的写出工具类。
-        // 配置类，指定分词器
 //        SmartChineseAnalyzer ik = new SmartChineseAnalyzer(); // 标准分词器
         IKAnalyzer ik = new IKAnalyzer();  // ik分词器
         // 创建写索引的配置对象
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(ik);
-        indexWriterConfig.setUseCompoundFile(true);
+        indexWriterConfig.setUseCompoundFile(true); // 是否为复合索引
         // 创建写索引对象。参数：索引文件目录，分词器
         IndexWriter indexWriter = new IndexWriter(directory, indexWriterConfig);
         for(File f: Objects.requireNonNull(file.listFiles())){
@@ -58,7 +56,7 @@ public class ElasticsearchUtil {
             int i = name.lastIndexOf(".");// 名称
             // 创建文档对象
             Document document = new Document();
-            // 给文档添加file.这里选Store.YES代表存储到文档列表。Store.NO代表不存储.
+            // 给文档添加file.属性Store.YES代表存储到文档列表。Store.NO代表不存储.
             // file类型：StringField、TextField、LongFiled.....
             document.add(new TextField("content", FileUtils.readFileToString(f,"UTF-8"), Field.Store.YES));
             document.add(new StringField("path", path, Field.Store.YES));
@@ -76,15 +74,15 @@ public class ElasticsearchUtil {
 
     public static List<QueryInfo> search(String file, String keyword)throws Exception{
 
+
         List<QueryInfo> list = new ArrayList<>();
         // 获取lucene索引文件
         Directory directory = FSDirectory.open(Paths.get("G:/elasticsearch/lucene/index"));
         //  创建IndexReader
         IndexReader indexReader = DirectoryReader.open(directory);
-       // 创建查询对象
+        // 创建查询对象
         IndexSearcher indexSearch = new IndexSearcher(indexReader);
-
-         // 构造查询条件
+        // 构造查询条件
 //        SmartChineseAnalyzer analyzer = new SmartChineseAnalyzer(); // 标准分词器
         IKAnalyzer analyzer = new IKAnalyzer();  // ik分词器
         // 查询字段解析
