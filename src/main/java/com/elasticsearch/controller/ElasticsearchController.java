@@ -27,6 +27,7 @@ public class ElasticsearchController {
     public String searchIndex(Search s, HttpServletRequest httpServletRequest){
         List<QueryInfo> result = elasticsearchService.searchIndex(s);
         httpServletRequest.getSession().setAttribute("result",result);
+
         return "data";
     }
 }
