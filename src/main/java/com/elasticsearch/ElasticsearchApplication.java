@@ -51,6 +51,9 @@ public class ElasticsearchApplication {
             document.add(new TextField("title", name.substring(0,i), Field.Store.YES));
             // 添加到索引文件中去
             indexWriter.addDocument(document);
+            indexWriter.deleteDocuments(new Term("","")); // 根据Term删除所有文件
+            indexWriter.deleteDocuments(new TermQuery(new Term("",""))); // 根据Query删除索引文件
+            indexWriter.deleteAll();
         }
         // 写入完毕，清理工作
         if (indexWriter != null) {
@@ -142,6 +145,38 @@ public class ElasticsearchApplication {
         }
         indexReader.close();
         directory.close();
+    }
+
+    // 更新索引
+    public void updateIndex() throws IOException {
+        // 索引存放路径
+        Directory directory = FSDirectory.open(Paths.get("G:/elasticsearch/lucene/index"));
+
+        // 创建IKAnalzyer分析器
+        IKAnalyzer analyzer = new IKAnalyzer();
+
+        // 创建IndexWriterConfig
+        IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
+
+        // 创建IndexWriter
+        IndexWriter indexWriter = new IndexWriter(directory, iwc);
+
+        Document document = new Document();
+        Document dd = new Document();
+
+        // 文件名称
+        document.add(new TextField("filename", "9999.txt", Field.Store.YES));
+        // 文件内容
+        document.add(new TextField("content", "全国范围学习", Field.Store.YES));
+        // 文件路径
+        document.add(new StoredField("path", "D:/Lucene/index/9999.txt"));
+        // 文件大小
+        document.add(new NumericDocValuesField("size", 5));
+
+        indexWriter.updateDocument(new Term("考试"), dd);
+        long l = indexWriter.commit();
+        indexWriter.close();
+        System.out.println("更新完毕");
     }
 
     public static void main(String[] args) throws Exception {
