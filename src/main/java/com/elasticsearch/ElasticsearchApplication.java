@@ -51,9 +51,9 @@ public class ElasticsearchApplication {
             document.add(new TextField("title", name.substring(0,i), Field.Store.YES));
             // 添加到索引文件中去
             indexWriter.addDocument(document);
-            indexWriter.deleteDocuments(new Term("","")); // 根据Term删除所有文件
-            indexWriter.deleteDocuments(new TermQuery(new Term("",""))); // 根据Query删除索引文件
-            indexWriter.deleteAll();
+//            indexWriter.deleteDocuments(new Term("","")); // 根据Term删除所有文件
+//            indexWriter.deleteDocuments(new TermQuery(new Term("",""))); // 根据Query删除索引文件
+//            indexWriter.deleteAll();
         }
         // 写入完毕，清理工作
         if (indexWriter != null) {
@@ -103,7 +103,7 @@ public class ElasticsearchApplication {
 //        SmartChineseAnalyzer analyzer = new SmartChineseAnalyzer(); // 标准分词器
 //        IKAnalyzer analyzer = new IKAnalyzer();  // ik分词器
 //        QueryParser parser = new QueryParser("content",analyzer);
-//        Query query = parser.parse("武汉");
+//        Query query = parser.parse("北京");
 
         // 方式二:布尔查询
 //        Term term1 = new Term("content", "北京");
@@ -127,8 +127,8 @@ public class ElasticsearchApplication {
 //                .build();
 
         // FuzzyQuery 模糊查询
-        Term term = new Term("content","屋汉");
-        FuzzyQuery query = new FuzzyQuery(term,1);
+        Term term = new Term("content","武汉");
+        FuzzyQuery query = new FuzzyQuery(term,0); // 参数1.Term：查询的词；参数2.maxEdits：模糊匹配度（取值范围0--2；值越低匹配度越低）
 
 
         // 执行查询
@@ -148,7 +148,38 @@ public class ElasticsearchApplication {
     }
 
     // 更新索引
-    public void updateIndex() throws IOException {
+    public static void updateIndex() throws IOException {
+        // 索引存放路径
+        Directory directory = FSDirectory.open(Paths.get("G:/elasticsearch/lucene/index"));
+
+        // 创建IKAnalzyer分析器
+        IKAnalyzer analyzer = new IKAnalyzer();
+
+        // 创建IndexWriterConfig
+        IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
+
+        // 创建IndexWriter
+        IndexWriter indexWriter = new IndexWriter(directory, iwc);
+
+        Document document = new Document();
+        // 文件名称
+//        document.add(new TextField("filename", "9999.txt", Field.Store.YES));
+        // 文件内容
+        document.add(new TextField("content", "武汉学1465465sffsdfsdf", Field.Store.YES));
+        // 文件路径
+//        document.add(new StoredField("path", "D:/Lucene/index/9999.txt"));
+        // 文件大小
+//        document.add(new NumericDocValuesField("size", 5));
+        // Lucene并没有提供更新，这里的更新操作相当于新增，他并不会去掉原来的信息
+        indexWriter.updateDocument(new Term("content","武汉"), document);
+        long l = indexWriter.commit();
+        indexWriter.close();
+        System.out.println("更新完毕");
+    }
+
+
+    // 删除索引
+    public static  void deleteIndex() throws IOException {
         // 索引存放路径
         Directory directory = FSDirectory.open(Paths.get("G:/elasticsearch/lucene/index"));
 
@@ -164,25 +195,19 @@ public class ElasticsearchApplication {
         Document document = new Document();
         Document dd = new Document();
 
-        // 文件名称
-        document.add(new TextField("filename", "9999.txt", Field.Store.YES));
-        // 文件内容
-        document.add(new TextField("content", "全国范围学习", Field.Store.YES));
-        // 文件路径
-        document.add(new StoredField("path", "D:/Lucene/index/9999.txt"));
-        // 文件大小
-        document.add(new NumericDocValuesField("size", 5));
-
-        indexWriter.updateDocument(new Term("考试"), dd);
-        long l = indexWriter.commit();
-        indexWriter.close();
-        System.out.println("更新完毕");
+        indexWriter.deleteDocuments(new Term("content","北京")); // 根据Term删除所有文件
+//        indexWriter.deleteDocuments(new TermQuery(new Term("",""))); // 根据Query删除索引文件
+//        indexWriter.deleteAll();
+        indexWriter.commit();
     }
+
 
     public static void main(String[] args) throws Exception {
 //        SpringApplication.run(ElasticsearchApplication.class, args);
 //        create(); // 创建
-//        search(); // 搜索
+//        updateIndex(); // 更新
+        search(); // 搜索
+//        deleteIndex(); // 删除
 
     }
 
